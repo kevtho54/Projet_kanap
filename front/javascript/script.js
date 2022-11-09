@@ -1,18 +1,69 @@
 /* ----------recuperation de l'api -----------*/
-let kanapData = [];
 fetch("http://localhost:3000/api/products")
   .then((products) => products.json())
   .then((data) => apiProducts(data));
 
+/* ---------- récupération des données du premier kanap de l'api ---------- */
 function apiProducts(data) {
-  console.log(data);
+  const id = data[0]._id;
   const imageUrl = data[0].imageUrl;
-  console.log("url de l'image", imageUrl);
+  const altTxt = data[0].altTxt;
+  const name = data[0].name;
+  const description = data[0].description;
 
+  /* ---------- création de "a, article, img, p" ----------*/
+  const anchor = makeAnchor(id);
+  const article = makeArticle();
+  const image = makeImage(imageUrl, altTxt);
+  const h3 = makeH3(name);
+  const p = makeP(description);
+
+  /* -------------- Ajout des enfants "img h3 p" à l'article ----------- */
+  article.appendChild(image);
+  article.appendChild(h3);
+  article.appendChild(p);
+
+  /* ----- Ajout de l'enfant "article" à anchor -----*/
+  appendChild(anchor, article);
+}
+/* ---------- Création du premier anchor ---------- */
+function makeAnchor(id) {
   let anchor = document.createElement("a");
-  anchor.href = imageUrl;
-  anchor.text = "Kanap Sinopé";
+  anchor.href = "./product.html?id=" + id;
+  return anchor;
+}
+/* ----- Ajout de anchor et article a #items -----*/
+function appendChild(anchor, article) {
   document.querySelector("#items");
   items.appendChild(anchor);
-  console.log("ajout du lien");
+  anchor.appendChild(article);
+}
+/* ----- fabrication de l'article -----*/
+function makeArticle() {
+  const article = document.createElement("article");
+  console.log(article);
+  return article;
+}
+
+/* ----- fabrication de la première image ------ */
+function makeImage(imageUrl, alt) {
+  const image = document.createElement("img");
+  image.src = imageUrl;
+  image.alt = alt;
+  return image;
+}
+
+/* ------ fabrication du h3 -----*/
+function makeH3(name) {
+  const h3 = document.createElement("h3");
+  h3.textContent = name;
+  h3.classList.add("productName");
+  return h3;
+}
+/* ----- fabrication du p -----*/
+function makeP(description) {
+  const p = document.createElement("p");
+  p.textContent = description;
+  p.classList.add("productDescription");
+  return p;
 }
