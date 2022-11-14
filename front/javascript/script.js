@@ -1,30 +1,34 @@
 /* ----------recuperation de l'api -----------*/
+
 fetch("http://localhost:3000/api/products")
   .then((products) => products.json())
   .then((data) => apiProducts(data));
 
-/* ---------- récupération des données du premier kanap de l'api ---------- */
+/* ---------- récupération des données kanap de l'api ---------- */
 function apiProducts(data) {
-  const id = data[0]._id;
-  const imageUrl = data[0].imageUrl;
-  const altTxt = data[0].altTxt;
-  const name = data[0].name;
-  const description = data[0].description;
+  data.forEach((kanap) => {
+    /* console.log("canape", kanap);*/
+    const id = kanap._id;
+    const imageUrl = kanap.imageUrl;
+    const altTxt = kanap.altTxt;
+    const name = kanap.name;
+    const description = kanap.description;
 
-  /* ---------- création de "a, article, img, p" ----------*/
-  const anchor = makeAnchor(id);
-  const article = makeArticle();
-  const image = makeImage(imageUrl, altTxt);
-  const h3 = makeH3(name);
-  const p = makeP(description);
+    /* ---------- création de "a, article, img, p" ----------*/
+    const anchor = makeAnchor(id);
+    const article = makeArticle();
+    const image = makeImage(imageUrl, altTxt);
+    const h3 = makeH3(name);
+    const p = makeP(description);
 
-  /* -------------- Ajout des enfants "img h3 p" à l'article ----------- */
-  article.appendChild(image);
-  article.appendChild(h3);
-  article.appendChild(p);
+    /* -------------- Ajout des enfants "img h3 p" à l'article ----------- */
+    article.appendChild(image);
+    article.appendChild(h3);
+    article.appendChild(p);
 
-  /* ----- Ajout de l'enfant "article" à anchor -----*/
-  appendChild(anchor, article);
+    /* ----- Ajout de l'enfant "article" à anchor -----*/
+    appendChild(anchor, article);
+  });
 }
 /* ---------- Création du premier anchor ---------- */
 function makeAnchor(id) {
@@ -41,7 +45,7 @@ function appendChild(anchor, article) {
 /* ----- fabrication de l'article -----*/
 function makeArticle() {
   const article = document.createElement("article");
-  console.log(article);
+  /*console.log(article);*/
   return article;
 }
 
