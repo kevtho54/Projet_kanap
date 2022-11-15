@@ -7,21 +7,23 @@ let id = url.get("id");
 fetch(`http://localhost:3000/api/products/${id}`)
   .then((product) => product.json())
   .then((res) => products(res));
+
 /* ------ récupération des données demander pour la page product ---------v */
 function products(kanap) {
-  console.log({ kanap });
   const imageUrl = kanap.imageUrl;
   const altTxt = kanap.altTxt;
   const colors = kanap.colors;
   const description = kanap.description;
   const name = kanap.name;
   const price = kanap.price;
-  const id = kanap._id;
 
   makeImage(imageUrl, altTxt);
   makeH1(name);
   makePrice(price);
+  makeDescription(description);
+  makeColors(colors);
 }
+
 /* ---------- création de l'image ---------- */
 function makeImage(imageUrl, altTxt) {
   const image = document.createElement("img");
@@ -32,13 +34,34 @@ function makeImage(imageUrl, altTxt) {
   if (item != null) item.appendChild(image);
 }
 
-/* ----------- création du h1 ---------- */
+/* ----------- Ajout du h1 ---------- */
 function makeH1(name) {
   const title = document.getElementById("title");
   if (title != null) title.textContent = name;
 }
 
+/* ----------- Ajout du prix ---------- */
 function makePrice(price) {
   const txtPrice = document.getElementById("price");
   if (txtPrice != null) txtPrice.textContent = price;
+  console.log(txtPrice);
+}
+
+/* ---------- ajout de la description ---------- */
+function makeDescription(description) {
+  const txtDescription = document.getElementById("description");
+  if (txtDescription != null) txtDescription.textContent = description;
+}
+
+/* ---------- Création de option pour les coouleurs ---------- */
+function makeColors(colors) {
+  const select = document.getElementById("colors");
+  if (select != null) {
+    colors.forEach((color) => {
+      const option = document.createElement("option");
+      option.value = color;
+      option.textContent = color;
+      select.appendChild(option);
+    });
+  }
 }
