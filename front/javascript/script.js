@@ -45,11 +45,10 @@ function appendChild(anchor, article) {
 /* ----- fabrication de l'article -----*/
 function makeArticle() {
   const article = document.createElement("article");
-  /*console.log(article);*/
   return article;
 }
 
-/* ----- fabrication de la première image ------ */
+/* ----- fabrication de l'image ------ */
 function makeImage(imageUrl, alt) {
   const image = document.createElement("img");
   image.src = imageUrl;
