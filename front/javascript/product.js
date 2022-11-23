@@ -2,7 +2,7 @@
 let currentUrl = window.location.search;
 let url = new URLSearchParams(currentUrl);
 let id = url.get("id");
-let imgUrl, altText;
+let imgUrl, altText, kanapName;
 
 /* ------ récuperation des données de l'api -----*/
 fetch(`http://localhost:3000/api/products/${id}`)
@@ -20,6 +20,8 @@ function products(kanap) {
 
   imgUrl = imageUrl;
   altText = altTxt;
+  kanapName = name;
+
   makeImage(imageUrl, altTxt);
   makeH1(name);
   makePrice(price);
@@ -40,7 +42,7 @@ function makeImage(imageUrl, altTxt) {
 /* ----------- Ajout du h1 ---------- */
 function makeH1(name) {
   const title = document.getElementById("title");
-  if (title != null) title.textContent = name;
+  if (typeof title == "undefined" || title == null) title.textContent = name;
 }
 
 /* ----------- Ajout du prix ---------- */
@@ -68,7 +70,6 @@ function makeColors(colors) {
   }
 }
 /* ---------- Récuperation des données via le boutton panier ---------- */
-
 const button = document.querySelector("#addToCart");
 button.addEventListener("click", selection);
 
@@ -76,24 +77,34 @@ function selection() {
   const color = document.querySelector("#colors").value;
   const quantity = document.querySelector("#quantity").value;
 
-  // // if (color == null || color === "" || quantity == null || quantity == 0) {
-  // //   alert("veuillez selectionner une couleur et un nombre");
-  //     return
-  // // }
+  /* ----------- affiche une alert si la couleur ou la quantité n'a pas été remplis ---------- */
+  if (color == null || color === "" || quantity == null || quantity == 0) {
+    alert("veuillez selectionner une couleur et un nombre");
+    return;
+  }
+
   data(color, quantity);
   pagePanier();
 }
 
 /* ---------- stockage des données dans le local storage ----------*/
 function data(color, quantity) {
-  const panier = {
+  let panier = {
     id: id,
     color: color,
     quantity: Number(quantity),
     imageUrl: imgUrl,
     altTxt: altText,
+    name: kanapName,
   };
-  localStorage.setItem(id, JSON.stringify(panier));
+  /* --- variable + if permet d'additionné un canapé identique ajouté plusieurs fois au panier ---*/
+  let canape = localStorage.getItem(id + color);
+
+  if (canape !== null) {
+    canape = JSON.parse(canape);
+    panier.quantity += canape.quantity;
+  }
+  localStorage.setItem(id + color, JSON.stringify(panier));
 }
 
 /* ---------- redirection vers la page panier  -----------*/
