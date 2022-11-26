@@ -18,9 +18,9 @@ function products(kanap) {
   const name = kanap.name;
   const price = kanap.price;
 
-  imgUrl = imageUrl;
-  altText = altTxt;
-  kanapName = name;
+  // imgUrl = imageUrl;
+  // altText = altTxt;
+  // kanapName = name;
 
   makeImage(imageUrl, altTxt);
   makeH1(name);
@@ -93,9 +93,9 @@ function data(color, quantity) {
     id: id,
     color: color,
     quantity: Number(quantity),
-    imageUrl: imgUrl,
-    altTxt: altText,
-    name: kanapName,
+    // imageUrl: imgUrl,
+    // altTxt: altText,
+    // name: kanapName,
   };
   /* --- variable + if permet d'additionné un canapé identique ajouté plusieurs fois au panier ---*/
   let canape = localStorage.getItem(id + color);

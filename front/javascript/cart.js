@@ -1,12 +1,12 @@
 /* ---------- innitialisation du tableau ----------*/
 let array = [];
-let apiProduct = [];
+let fetchapi = [];
 
 /* ---------- récuperation des données dans le localStorage ----------- */
 dataStorage();
 
 array.forEach((item) => itemHtml(item));
-console.log(array);
+// console.log(array);
 
 function dataStorage() {
   const key = localStorage.length;
@@ -20,19 +20,22 @@ function dataStorage() {
   }
 }
 function fetchApi() {
-  const api = dataStorage();
+  let api = dataStorage();
   for (const item of api) {
     fetch("http://localhost:3000/api/products/" + item.id)
       .then((response) => response.json())
       .then((product) => itemHtml(product, item));
+    // const object = JSON.parse(product);
+    // apiProduct.push(object);
   }
 }
+
 /* ---------- affichage de l'article ---------*/
 function displayArticle(article) {
   document.querySelector("#cart__items").appendChild(article);
 }
 /* ----------- affichage des item html dans article ---------- */
-function itemHtml(item, data) {
+function itemHtml(item) {
   const article = makeArticle(item);
   const div = makeImage(item);
   article.appendChild(div);
@@ -41,9 +44,9 @@ function itemHtml(item, data) {
   article.appendChild(cart);
   displayArticle(article);
   displayTotalQuantity(item);
-  displayTotalPrice(data);
+  displayTotalPrice();
 
-  console.log(article);
+  // console.log(article);
 }
 /* ---------- création de l'article ----------*/
 function makeArticle(item) {
@@ -80,7 +83,7 @@ function makeCart(item) {
   return cart;
 }
 /* ----------- creation de la description ---------- */
-function makeDescription(item) {
+function makeDescription(item, product) {
   const description = document.createElement("div");
   description.classList.add("cart__item__content__description");
 
@@ -91,7 +94,7 @@ function makeDescription(item) {
   p.textContent = item.color;
 
   const p2 = document.createElement("p");
-  p2.textContent = item.price;
+  p2.textContent = product.price;
 
   description.appendChild(h2);
   description.appendChild(p);
@@ -139,6 +142,7 @@ function displayTotalQuantity(item) {
   const totalQuantity = document.querySelector("#totalQuantity");
   totalQuantity.textContent = item.quantity;
 }
+
 function displayTotalPrice() {
   const totalPrice = document.querySelector("#totalPrice");
   totalPrice.textContent = "€";
