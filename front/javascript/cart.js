@@ -3,26 +3,24 @@ let array = [];
 
 /* ---------- récuperation des données dans le localStorage ----------- */
 dataStorage();
+totalQuantity();
 
 array.forEach((item) => item);
-console.log(array);
 
 function dataStorage() {
   const itemCount = localStorage.length;
-  const totalPrice = document.querySelector("#totalPrice"); // ce sont des constantes, elles n'ont pas à être redéfinies dans la boucle
-  const totalQuantity = document.querySelector("#totalQuantity");
-  totalPrice.textContent = 0; // je mets les totaux à zéro pour ensuite pouvoir additionner
-  totalQuantity.textContent = 0;
+  // let totalPrice = document.querySelector("#totalPrice"); // Je selectionne l'id pour y inséré le prix total
+  // const totalQuantity = document.querySelector("#totalQuantity"); // je fais de même pour la quantité
+
   for (let i = 0; i < itemCount; i++) {
     // pour chacun de mes éléments du localStorage
     let item = localStorage.getItem(localStorage.key(i)); // je récupère l'item correspondant
     let localObject = JSON.parse(item); // je vais avoir besoin de la quantité, elle est dans le localStorage et aussi de l'ID pour aller récupérer le prix via l'API
-    array.push(localObject); // pourquoi pas ...
+    array.push(localObject);
+    /* ---------- récupération du prix via l'api ---------- */
     const apiPrice = fetch(
       "http://localhost:3000/api/products/" + localObject.id
-    ) // je vais chercher le prix (entre autres choses
-      // c'est pas hyper propre de tout remonter car en fait je n'ai besoin que du prix, mais l'API telle qu'elle est faite
-      // ne permet pas de faire autrement. Heureusement qu'il n'y a pas 50 pages de documentation pour décrire le canapé.
+    )
       .then((response) => response.json())
       .then((product) => {
         /* ---------- article ----------*/
@@ -45,6 +43,7 @@ function dataStorage() {
 
         /* ---------- Création de la div description ----------*/
         const cart = document.createElement("div"); //création de la div cart item content
+
         cart.classList.add("cart__item__content"); //ajout de la class a cette div
 
         const description = document.createElement("div"); // création d'une div qui sera dans "cart item content description"
@@ -87,6 +86,9 @@ function dataStorage() {
         input.max = "100"; // ajout de la valeur maximum de l'input
         input.value = localObject.quantity; // dans value nous devont y mettre la quantité donc je vais chercher la quantité dans le local storage avec local object
 
+        input.addEventListener("change", () =>
+          newQuantity(localObject.id, input.value, localObject, product)
+        );
         /* ---------- ajout des éléments enfants a la div settings ----------*/
         settings.appendChild(settingsQuantity);
         settings.appendChild(settingsP);
@@ -95,7 +97,7 @@ function dataStorage() {
         /* ---------- boutton supprimer ----------*/
         const settingDelete = document.createElement("div"); // création de l'element "div"
         settingDelete.classList.add("cart__item__content__settings__delete"); // ajout de la class pour cette div
-
+        settingDelete.addEventListener("click", deleteItem);
         const deleteP = document.createElement("p"); // création de l'element "p"
         deleteP.classList.add("deleteItem"); //ajout de la class pour l'element "p"
         deleteP.textContent = "Supprimer"; // ajout du text pour l'element "p"
@@ -107,14 +109,49 @@ function dataStorage() {
         article.appendChild(cart); // après avoir ajouter les enfants a cart, j'ajoute cart a l'element article
 
         /* ---------- Calcule du prix total des articles dans le panier --------- */
-        totalPrice.textContent =
-          parseInt(product.price) * localObject.quantity +
-          parseInt(totalPrice.textContent); // j'incrémente le total, le prix est dans product
 
-        /* ---------- Calcule de la quantité total  dans le panier ----------*/
-        totalQuantity.textContent =
-          parseInt(localObject.quantity) + parseInt(totalQuantity.textContent); // j'incrémente le total, la quantité est dans le localObject
-        return true; // j'ai rien de précis à retourner, pourquoi pas "true"
+        // /* ---------- Calcule de la quantité total  dans le panier ----------*/
+
+        // // j'incrémente le total, la quantité est dans le localObject
+        // totalQuantity.textContent =
+        //   parseInt(localObject.quantity) + parseInt(totalQuantity.textContent);
+        // });
+        // totalPrice.textContent =
+        //   parseInt(product.price) * localObject.quantity +
+        //   parseInt(totalPrice.textContent);
+
+        newTotalPrice(product, localObject);
       });
   }
+}
+function newTotalPrice(product, localObject) {
+  const totalPrice = document.querySelector("#totalPrice");
+  totalPrice.textContent = 0; // je mets les totaux à zéro pour ensuite pouvoir additionner
+
+  const newPrice = product.price * localObject.quantity;
+  totalPrice.textContent = newPrice;
+}
+
+function totalQuantity() {
+  const quantity = document.querySelector("#totalQuantity");
+  quantity.textContent = 0;
+  const total = array.reduce(
+    (total, localObject) => total + localObject.quantity,
+    0
+  );
+  quantity.textContent = total;
+}
+
+function newQuantity(id, newValue, localObject, product) {
+  const newLocalObject = array.find((localObject) => localObject.id === id);
+  newLocalObject.quantity = Number(newValue);
+  saveLocalStorage(localObject);
+  totalQuantity();
+  newTotalPrice(product, localObject);
+}
+
+function saveLocalStorage(localObject) {
+  const saveStorage = JSON.stringify(localObject);
+  localStorage.setItem(localObject.id + localObject.color, saveStorage);
+  console.log("data", saveStorage);
 }
