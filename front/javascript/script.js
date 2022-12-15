@@ -7,7 +7,6 @@ fetch("http://localhost:3000/api/products")
 /* ---------- récupération des données kanap de l'api ---------- */
 function apiProducts(data) {
   data.forEach((kanap) => {
-    /* console.log("canape", kanap);*/
     const id = kanap._id;
     const imageUrl = kanap.imageUrl;
     const altTxt = kanap.altTxt;

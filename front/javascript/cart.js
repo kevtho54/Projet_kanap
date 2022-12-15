@@ -57,7 +57,7 @@ function dataStorage() {
 
         const p2 = document.createElement("p"); // création du second "p" pour y inseré le prix
         p2.textContent = product.price + "€"; // récuperation du prix depuis l'api
-        console.log(p2);
+
         /* ---------- ajout des element enfants à la div description ----------*/
         description.appendChild(h2);
         description.appendChild(p);
@@ -85,7 +85,7 @@ function dataStorage() {
         input.min = "1"; // ajout de la valeur minimum de selection pour l'input
         input.max = "100"; // ajout de la valeur maximum de l'input
         input.value = localObject.quantity; // dans value nous devont y mettre la quantité donc je vais chercher la quantité dans le local storage avec local object
-        console.log(input);
+
         /* ---------- J'utilise addEventListenner pour modifié la quantité et les prix quand j'utilise les flèches ----------*/
         input.addEventListener(
           "change",
@@ -154,8 +154,8 @@ function newTotalPrice(product, localObject, localStorage) {
       .then((product) => {
         let currentObject = JSON.parse(
           localStorage.getItem(localStorage.key(i))
-        );
-        tPrice = parseInt(currentObject.quantity) * product.price + tPrice;
+        ); // Je fais un fetch de l'api + le localStorage pour pouvoir mettre a jours dinamiquement le prix et la quantité
+        tPrice = parseInt(currentObject.quantity) * product.price + tPrice; // je prend la quantité de mon LS que je multiplie par le prix du produit + tprice qui est a 0
         document.querySelector("#totalPrice").textContent = tPrice; //je selectionne le prix total
       });
   }
@@ -201,22 +201,22 @@ function saveLocalStorage(localObject) {
 
 /*----------- formulaire ----------*/
 function submitForm(e) {
-  const form = document.querySelector(".cart__order__form");
+  // const form = document.querySelector(".cart__order__form");// je selectionne mon formulaire
   e.preventDefault(); // permet de ne pas rafraichir la page a chaque fois qu'on click sur le button
   if (array.length === 0) {
     alert("Merci de selectionné un article au panier"); //envois une alert si il n'y a rien dans le panier
-    return;
+    return; // n'exectute pas la suite tant qu'il n'y a pas de produit au panier
   }
-
-  formInvalid();
+  /* ----- test que les fonction remplisse les condition sinon return pour ne pas executé la fonction suivante */
   if (firstNameControle()) return;
   if (lastNameControle()) return;
   if (addressControle()) return;
   if (cityControle()) return;
   if (emailControle()) return;
+  /* ------- fin des test -------*/
 
   const Body = formBody();
-
+  /* ---------- Fetch pour renvoyer les donné du formulaire dans l'api ----------*/
   fetch("http://localhost:3000/api/products/order", {
     method: "POST",
     body: JSON.stringify(Body),
@@ -225,15 +225,21 @@ function submitForm(e) {
     },
   })
     .then((res) => res.json())
-    .then((data) => console.log(data));
+    .then((data) => {
+      const orderId = data.orderId;
+      window.location.href = "confirmation.html" + "?orderId=" + orderId;
+    })
+    .catch((err) => console.error(err));
 }
-
+/* ------- Champs du formulaire ----------*/
 function formBody() {
-  let listProduct = [];
+  let listProduct = []; //création d'un tableau pour l'id product
   for (let i = 0; i < localStorage.length; i++) {
     listProduct.push(JSON.parse(localStorage.getItem(localStorage.key(i))).id);
-  }
-  const form = document.querySelector(".cart__order__form");
+  } //Récuperation des données dans le local storage
+
+  const form = document.querySelector(".cart__order__form"); // Je selectionne le formulaire
+  /* ---------- Je recupère les valeurs des champs du formulaire ----------*/
   const firstName = form.elements.firstName.value;
   const lastName = form.elements.lastName.value;
   const address = form.elements.address.value;
@@ -248,38 +254,34 @@ function formBody() {
       email: email,
     },
     products: listProduct,
-  };
+  }; // Pour product je lui inject l'id recuperé dans le local storage
   return Body;
-}
-function formInvalid() {
-  const form = document.querySelector(".cart__order__form");
-  const inputs = form.querySelectorAll("input");
-  // if (inputs.some((input) => input.value === "")) {
-  //   alert("Veuillez remplir tous les champs");
-  //   return true;
-  // }
-  // return false;
-  // }
-}
-function firstNameControle() {
-  const firstName = document.querySelector("#firstName").value;
-  const regex = new RegExp("^[a-zA-Z àâäéèêëïîôöùûüç,.'-]+$");
-  if (regex.test(firstName, lastName) === false) {
-    alert("entrée un prénom valide");
-    return true;
-  }
-  return false;
-}
-function lastNameControle() {
-  const lastName = document.querySelector("#lastName").value;
-  const regex = new RegExp("^[a-zA-Z àâäéèêëïîôöùûüç,.'-]+$");
-  if (regex.test(lastName) === false) {
-    alert("entrée un nom valide");
-    return true;
-  }
-  return false;
+  /* ---------- Fin de la récuperation des valeurs ----------*/
 }
 
+/* --------------------Controle du formulaire avec des regex -------------------- */
+
+/* ---------- Controle du prénom ---------- */
+function firstNameControle() {
+  const firstName = document.querySelector("#firstName").value; // Je recupère la valeur du champ "prénom"
+  const regex = new RegExp("^[a-zA-Z àâäéèêëïîôöùûüç,.'-]+$"); // Je crée un regex qui va controler que le champs et bon
+  if (regex.test(firstName, lastName) === false) {
+    alert("entrée un prénom valide");
+    return true; // Je test le champ. Si il y a une erreur, il me retourne true car il est vrai que le champ n'est pas bon
+  }
+  return false; // si tout est ok il me retourne false car c'est faux, le champ na pas de problème.
+}
+/* ---------- Controle du Nom ---------- */
+function lastNameControle() {
+  const lastName = document.querySelector("#lastName").value; //Je recupère la valeur du champ "prénom"
+  const regex = new RegExp("^[a-zA-Z àâäéèêëïîôöùûüç,.'-]+$"); //Je crée un regex qui va controler que le champs et bon
+  if (regex.test(lastName) === false) {
+    alert("entrée un nom valide");
+    return true; //Je test le champ. Si il y a une erreur, il me retourne true car il est vrai que le champ n'est pas bon
+  }
+  return false; // si tout est ok il me retourne false car c'est faux, le champ na pas de problème.
+}
+/* ---------- controle de l'adresse -----*/
 function addressControle() {
   const address = document.querySelector("#address").value;
   const regex = new RegExp("^[[a-zA-Z0-9 àâäéèêëïîôöùûüç,.'-]+$");
@@ -289,6 +291,7 @@ function addressControle() {
   }
   return false;
 }
+/* ---------- controle de la ville ----------*/
 function cityControle() {
   const city = document.querySelector("#city").value;
   const regex = new RegExp("^[a-zA-Z àâäéèêëïîôöùûüç,.'-]+$");
@@ -298,14 +301,13 @@ function cityControle() {
   }
   return false;
 }
+/* ---------- Controle de l'email -----------*/
 function emailControle() {
-  const email = document.querySelector("#email").value;
-  const regex = new RegExp(
-    "^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$"
-  );
+  const email = document.querySelector("#email").value; // Je selectionne la valeur de l'id "email"
+  const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/; // Je crée une regex afin de controler que l'email sois valide
   if (regex.test(email) === false) {
     alert("entrée un email valide");
     return true;
-  }
-  return false;
+  } // Je test la valeur inscrite dans l'id "email" si il est vide ou comporte une erreur,je retourne true car il est vrai que le mail est invalide et une alert apparait.
+  return false; // Si il n'y a pas d'erreur je retourne false car c'est faux l'email est correct.
 }
