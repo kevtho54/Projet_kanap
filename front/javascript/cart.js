@@ -89,14 +89,7 @@ function dataStorage() {
         /* ---------- J'utilise addEventListenner pour modifié la quantité et les prix quand j'utilise les flèches ----------*/
         input.addEventListener(
           "change",
-          () =>
-            newQuantity(
-              localObject.id,
-              input.value,
-              localObject,
-              product,
-              localStorage
-            ) // j'appelle la fonction "newQuantity" je lui ajout l'id, la valeur de l'input et le prix de l'api
+          () => newQuantity(localObject.id, input.value, localObject, product) // j'appelle la fonction "newQuantity" je lui ajout l'id, la valeur de l'input et le prix de l'api
         );
         // /* ---------- ajout des éléments enfants a la div settings ----------*/
         settings.appendChild(settingsQuantity);
@@ -106,7 +99,9 @@ function dataStorage() {
         /* ---------- boutton supprimer ----------*/
         const settingDelete = document.createElement("div"); // création de l'element "div"
         settingDelete.classList.add("cart__item__content__settings__delete"); // ajout de la class pour cette div
-        settingDelete.addEventListener("click", () => deletekanap(localObject)); // permet de supprimé le canapé cliqué. (localObject permet de chercher l'id du canapé en question)
+        settingDelete.addEventListener("click", () =>
+          deletekanap(localObject, product)
+        ); // permet de supprimé le canapé cliqué. (localObject permet de chercher l'id du canapé en question)
 
         const deleteP = document.createElement("p"); // création de l'element "p"
         deleteP.classList.add("deleteItem"); //ajout de la class pour l'element "p"
@@ -122,12 +117,11 @@ function dataStorage() {
         totalPrice.textContent =
           parseInt(product.price) * localObject.quantity +
           parseInt(totalPrice.textContent);
-        //newTotalPrice(product, localObject); //J'appelle la fonction pour affiché le prix total
       });
   }
 }
 /* ------ Supression des données du kanap voulant être supprimé ---------- */
-function deletekanap(localObject) {
+function deletekanap(localObject, product) {
   const canapDelete = array.findIndex(
     (item) => item.id === localObject.id && item.color === localObject.color
   ); //utilisation de findIndex pour que les données de l'objet complet sois supprimés du tableau
@@ -139,12 +133,15 @@ function deletekanap(localObject) {
     totalQuantity();
     deleteKanapFromLs(localObject);
     deleteKanapFromPage(localObject);
+    newTotalPrice(product, localObject);
   }
 }
 
 /* ---------- fonction permet de modifier le prix total après avoir modifier la quantité avec les fleches ----------*/
-function newTotalPrice(product, localObject, localStorage) {
+function newTotalPrice(product, localObject) {
   let tPrice = 0; // je mets les totaux à zéro pour ensuite pouvoir additionner
+  if (localStorage.length == 0)
+    document.querySelector("#totalPrice").textContent = 0;
   for (let i = 0; i < localStorage.length; i++) {
     fetch(
       "http://localhost:3000/api/products/" +
@@ -172,14 +169,14 @@ function totalQuantity() {
 }
 
 /* ------- nouvelle quantité en utilisant les flèches de l'input ----------*/
-function newQuantity(id, newValue, localObject, product, localStorage) {
+function newQuantity(id, newValue, localObject, product) {
   const newLocalObject = array.find((localObject) => localObject.id === id); // je renvois la valeur du kanap trouver avec l'id correspondant
   newLocalObject.quantity = Number(newValue); // cette valeur deviens la nouvelle valeur du addeventlistener de l'input
 
   /* ----- J'appelle les fonction pour que celle si s'ajoute à newquantity --------*/
   saveLocalStorage(localObject);
   totalQuantity();
-  newTotalPrice(product, localObject, localStorage);
+  newTotalPrice(product, localObject);
 }
 /* ------ suppression du kanap dans le local Storage -----------*/
 function deleteKanapFromLs(localObject) {
@@ -229,7 +226,7 @@ function submitForm(e) {
       const orderId = data.orderId;
       window.location.href = "confirmation.html" + "?orderId=" + orderId;
     })
-    .catch((err) => console.error(err));
+    .catch((err) => console.error(err)); // renvois une erreur si il y a un probleme
 }
 /* ------- Champs du formulaire ----------*/
 function formBody() {
@@ -262,52 +259,89 @@ function formBody() {
 /* --------------------Controle du formulaire avec des regex -------------------- */
 
 /* ---------- Controle du prénom ---------- */
+const firstName = document.querySelector("#firstName"); //  Je selectionne l'input
+firstName.addEventListener("keydown", () => firstNameControle()); // J'utilise keydown pour que le message d'erreur s'affiche directement si un chiffre est taper au lieu d'une lettre pour le nom par exemple
+
 function firstNameControle() {
   const firstName = document.querySelector("#firstName").value; // Je recupère la valeur du champ "prénom"
+
   const regex = new RegExp("^[a-zA-Z àâäéèêëïîôöùûüç,.'-]+$"); // Je crée un regex qui va controler que le champs et bon
-  if (regex.test(firstName, lastName) === false) {
-    alert("entrée un prénom valide");
+  if (regex.test(firstName) === false) {
+    document.querySelector("#firstNameErrorMsg").innerHTML =
+      "Veuillez entrée un prénom valide"; // J' affiche un message dans l'html si il y a une erreur
     return true; // Je test le champ. Si il y a une erreur, il me retourne true car il est vrai que le champ n'est pas bon
   }
+
+  document.querySelector("#firstNameErrorMsg").innerHTML = " "; // aucun message si tout est bon
   return false; // si tout est ok il me retourne false car c'est faux, le champ na pas de problème.
 }
+
 /* ---------- Controle du Nom ---------- */
+const lastName = document.querySelector("#lastName"); //  Je selectionne l'input
+lastName.addEventListener("keydown", () => lastNameControle()); // J'utilise keydown pour que le message d'erreur s'affiche directement si un chiffre est taper au lieu d'une lettre pour le nom par exemple
+
 function lastNameControle() {
   const lastName = document.querySelector("#lastName").value; //Je recupère la valeur du champ "prénom"
+
   const regex = new RegExp("^[a-zA-Z àâäéèêëïîôöùûüç,.'-]+$"); //Je crée un regex qui va controler que le champs et bon
   if (regex.test(lastName) === false) {
-    alert("entrée un nom valide");
+    document.querySelector("#lastNameErrorMsg").innerHTML =
+      "Veuillez entrée un nom valide"; // J' affiche un message dans l'html si il y a une erreur
     return true; //Je test le champ. Si il y a une erreur, il me retourne true car il est vrai que le champ n'est pas bon
   }
+
+  document.querySelector("#lastNameErrorMsg").innerHTML = " "; // aucun message si tout est bon
   return false; // si tout est ok il me retourne false car c'est faux, le champ na pas de problème.
 }
+
 /* ---------- controle de l'adresse -----*/
+const address = document.querySelector("#address"); //  Je selectionne l'input
+address.addEventListener("keydown", () => addressControle()); // J'utilise keydown pour que le message d'erreur s'affiche directement si un chiffre est taper au lieu d'une lettre pour le nom par exemple
+
 function addressControle() {
   const address = document.querySelector("#address").value;
-  const regex = new RegExp("^[[a-zA-Z0-9 àâäéèêëïîôöùûüç,.'-]+$");
+
+  const regex = new RegExp("^[a-zA-Z0-9 àâäéèêëïîôöùûüç,.'-]+$");
   if (regex.test(address) === false) {
-    alert("entrée une addresse valide");
+    document.querySelector("#addressErrorMsg").innerHTML =
+      "Veuillez entrée une adresse valide "; // J' affiche un message dans l'html si il y a une erreur
     return true;
   }
+
+  document.querySelector("#addressErrorMsg").innerHTML = " "; // aucun message si tout est bon
   return false;
 }
 /* ---------- controle de la ville ----------*/
+const city = document.querySelector("#city"); //  Je selectionne l'input
+city.addEventListener("keydown", () => cityControle()); // J'utilise keydown pour que le message d'erreur s'affiche directement si un chiffre est taper au lieu d'une lettre pour le nom par exemple
+
 function cityControle() {
   const city = document.querySelector("#city").value;
+
   const regex = new RegExp("^[a-zA-Z àâäéèêëïîôöùûüç,.'-]+$");
   if (regex.test(city) === false) {
-    alert("entrée une ville valide");
+    document.querySelector("#cityErrorMsg").innerHTML =
+      "Veuillez entrée une ville valide "; // J' affiche un message dans l'html si il y a une erreur
     return true;
   }
+
+  document.querySelector("#cityErrorMsg").innerHTML = " ";
   return false;
 }
 /* ---------- Controle de l'email -----------*/
+const email = document.querySelector("#email"); //  Je selectionne l'input
+email.addEventListener("keydown", () => emailControle()); // J'utilise keydown pour que le message d'erreur s'affiche directement si un chiffre est taper au lieu d'une lettre pour le nom par exemple
+
 function emailControle() {
   const email = document.querySelector("#email").value; // Je selectionne la valeur de l'id "email"
+
   const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/; // Je crée une regex afin de controler que l'email sois valide
   if (regex.test(email) === false) {
-    alert("entrée un email valide");
+    document.querySelector("#emailErrorMsg").innerHTML =
+      "Veuillez entrée un email valide "; // J' affiche un message dans l'html si il y a une erreur
     return true;
   } // Je test la valeur inscrite dans l'id "email" si il est vide ou comporte une erreur,je retourne true car il est vrai que le mail est invalide et une alert apparait.
+
+  document.querySelector("#emailErrorMsg").innerHTML = " ";
   return false; // Si il n'y a pas d'erreur je retourne false car c'est faux l'email est correct.
 }
